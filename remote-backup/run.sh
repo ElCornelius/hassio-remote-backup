@@ -11,6 +11,7 @@ SSH_KEY=$(jq --raw-output ".ssh_key[]" $CONFIG_PATH)
 REMOTE_DIRECTORY=$(jq --raw-output ".remote_directory" $CONFIG_PATH)
 ZIP_PASSWORD=$(jq --raw-output '.zip_password' $CONFIG_PATH)
 KEEP_LOCAL_BACKUP=$(jq --raw-output '.keep_local_backup' $CONFIG_PATH)
+SSH-DSS=$(jq --raw-output '.ssh-dss' $CONFIG_PATH)
 
 # create variables
 SSH_ID="${HOME}/.ssh/id"
@@ -40,11 +41,21 @@ function copy-backup-to-remote {
     cd /backup/
     if [[ -z $ZIP_PASSWORD  ]]; then
       echo "Copying ${slug}.tar to ${REMOTE_DIRECTORY} on ${SSH_HOST} using SCP"
-      scp -F "${HOME}/.ssh/config" "${slug}.tar" remote:"${REMOTE_DIRECTORY}"
+      if[[ ${SSH-DSS} ]]; then
+        echo "Use ssh-dss"
+        scp -F -oHostKeyAlgorithms=+ssh-dss "${HOME}/.ssh/config" "${slug}.tar" remote:"${REMOTE_DIRECTORY}"
+      else
+        scp -F "${HOME}/.ssh/config" "${slug}.tar" remote:"${REMOTE_DIRECTORY}"
+      fi
     else
       echo "Copying password-protected ${slug}.zip to ${REMOTE_DIRECTORY} on ${SSH_HOST} using SCP"
       zip -P "$ZIP_PASSWORD" "${slug}.zip" "${slug}".tar
-      scp -F "${HOME}/.ssh/config" "${slug}.zip" remote:"${REMOTE_DIRECTORY}" && rm "${slug}.zip"
+      if[[ ${SSH-DSS} ]]; then
+        echo "Use ssh-dss"
+        scp -F -oHostKeyAlgorithms=+ssh-dss "${HOME}/.ssh/config" "${slug}.zip" remote:"${REMOTE_DIRECTORY}" && rm "${slug}.zip"
+      else
+        scp -F "${HOME}/.ssh/config" "${slug}.zip" remote:"${REMOTE_DIRECTORY}" && rm "${slug}.zip"
+      fi
     fi
 
 }

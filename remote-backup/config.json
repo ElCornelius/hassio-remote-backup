@@ -15,7 +15,8 @@
     "ssh_key": [],
     "remote_directory": "",
     "zip_password": "",
-    "keep_local_backup": ""
+    "keep_local_backup": "",
+    "ssh-dss": false
   },
   "schema": {
     "ssh_host": "str",
@@ -24,6 +25,7 @@
     "ssh_key": ["str"],
     "remote_directory": "str",
     "zip_password": "str",
-    "keep_local_backup": "match(^(all|[+]?\\d*)$)"
+    "keep_local_backup": "match(^(all|[+]?\\d*)$)",
+    "ssh-dss": "bool"
   }
 }
